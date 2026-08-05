@@ -1,0 +1,12 @@
+{
+  "ceo": "qwen2.5:72b",
+  "developer": "qwen2.5-coder:32b",
+  "writer": "qwen2.5:32b",
+  "researcher": "deepseek-r1:32b",
+  "business": "qwen2.5:32b",
+  "editor": "qwen2.5:32b",
+  "youtube": "qwen2.5:14b",
+  "instagram": "qwen2.5:14b",
+  "designer": "gemma2:9b",
+  "secretary": "gemma4:e4b"
+}

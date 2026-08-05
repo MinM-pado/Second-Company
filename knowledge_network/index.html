@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지식 네트워크 라이브 (Knowledge Network Live)</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background Animated Mesh Gradient -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <div id="app" class="app-container">
+    
+    <!-- Top Header & Navigation Bar -->
+    <header class="header-bar">
+      <div class="header-brand">
+        <div class="logo-icon">
+          <i data-lucide="network"></i>
+        </div>
+        <div class="brand-text">
+          <h1>지식 네트워크 <span class="badge-live"><span class="pulse-dot"></span> LIVE</span></h1>
+          <p class="subtitle">AI 에이전트 & 지식 자산 간의 실시간 연관관계 지도</p>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="header-controls">
+        <div class="search-box">
+          <i data-lucide="search"></i>
+          <input type="text" id="search-input" placeholder="지식 노드, 에이전트, 키워드 검색...">
+          <button id="search-clear" class="btn-icon hidden"><i data-lucide="x"></i></button>
+        </div>
+
+        <!-- View Switcher -->
+        <div class="view-switcher" role="tablist">
+          <button class="view-btn active" data-view="network" title="네트워크 시각화 뷰">
+            <i data-lucide="share-2"></i> <span>네트워크</span>
+          </button>
+          <button class="view-btn" data-view="mindmap" title="마인드맵 계층 뷰">
+            <i data-lucide="git-fork"></i> <span>마인드맵</span>
+          </button>
+          <button class="view-btn" data-view="list" title="구조화 목록 뷰">
+            <i data-lucide="list"></i> <span>목록보기</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Category Filter Bar -->
+    <div class="filter-bar">
+      <span class="filter-label"><i data-lucide="filter"></i> 카테고리:</span>
+      <div class="filter-pills">
+        <button class="pill-btn active" data-category="all">전체 <span class="pill-count" id="count-all">0</span></button>
+        <button class="pill-btn pill-agent" data-category="agent">🤖 AI 에이전트 <span class="pill-count" id="count-agent">0</span></button>
+        <button class="pill-btn pill-doc" data-category="doc">📄 지식 문서 <span class="pill-count" id="count-doc">0</span></button>
+        <button class="pill-btn pill-tool" data-category="tool">⚡ 자동화 툴 <span class="pill-count" id="count-tool">0</span></button>
+        <button class="pill-btn pill-framework" data-category="framework">📊 분석 프레임워크 <span class="pill-count" id="count-framework">0</span></button>
+      </div>
+      <div class="graph-stats">
+        <span>연결 수: <strong id="stat-edges">0</strong>개</span>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <main class="main-content">
+      
+      <!-- Viewport 1: Network Graph View -->
+      <div id="view-network" class="view-panel active">
+        <div class="canvas-container">
+          <svg id="network-svg" width="100%" height="100%">
+            <defs>
+              <!-- Arrowhead markers for links -->
+              <marker id="arrow-agent" viewBox="0 -5 10 10" refX="28" refY="0" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0,-5L10,0L0,5" fill="#8b5cf6" />
+              </marker>
+              <marker id="arrow-doc" viewBox="0 -5 10 10" refX="28" refY="0" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0,-5L10,0L0,5" fill="#10b981" />
+              </marker>
+              <marker id="arrow-default" viewBox="0 -5 10 10" refX="28" refY="0" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0,-5L10,0L0,5" fill="#64748b" />
+              </marker>
+            </defs>
+            <g id="network-viewport">
+              <g id="network-links-group"></g>
+              <g id="network-labels-group"></g>
+              <g id="network-nodes-group"></g>
+            </g>
+          </svg>
+
+          <!-- Graph Controls Overlays -->
+          <div class="canvas-overlay-controls">
+            <button id="btn-zoom-in" class="btn-circle" title="확대"><i data-lucide="plus"></i></button>
+            <button id="btn-zoom-out" class="btn-circle" title="축소"><i data-lucide="minus"></i></button>
+            <button id="btn-reset-view" class="btn-circle" title="뷰 리셋"><i data-lucide="rotate-ccw"></i></button>
+          </div>
+
+          <div class="canvas-legend">
+            <span class="legend-item"><span class="dot dot-agent"></span> AI 에이전트</span>
+            <span class="legend-item"><span class="dot dot-doc"></span> 지식 문서</span>
+            <span class="legend-item"><span class="dot dot-tool"></span> 자동화 툴</span>
+            <span class="legend-item"><span class="dot dot-framework"></span> 프레임워크</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Viewport 2: Mindmap Hierarchy View -->
+      <div id="view-mindmap" class="view-panel">
+        <div class="mindmap-container" id="mindmap-tree">
+          <!-- Dynamically populated by JS -->
+        </div>
+      </div>
+
+      <!-- Viewport 3: Structured List View -->
+      <div id="view-list" class="view-panel">
+        <div class="list-container">
+          <div class="list-header">
+            <div class="col-title">지식 항목 및 이름</div>
+            <div class="col-category">분류</div>
+            <div class="col-summary">3줄 핵심 요약</div>
+            <div class="col-connections">연관 지식 수</div>
+            <div class="col-action">상세보기</div>
+          </div>
+          <div class="list-body" id="list-body">
+            <!-- Dynamically populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side Detail Summary Card Panel -->
+      <aside id="side-panel" class="side-panel">
+        <div class="panel-header">
+          <span class="panel-category-badge" id="panel-category">카테고리</span>
+          <button id="panel-close" class="btn-icon"><i data-lucide="x"></i></button>
+        </div>
+
+        <div class="panel-body">
+          <div class="node-title-group">
+            <span class="node-big-icon" id="panel-icon">📄</span>
+            <div>
+              <h2 id="panel-title">지식 항목 제목</h2>
+              <span class="node-meta-time" id="panel-time"><i data-lucide="clock"></i> 동기화: 방금 전</span>
+            </div>
+          </div>
+
+          <!-- AI 3-Line Summary Block -->
+          <div class="summary-card">
+            <h3><i data-lucide="sparkles"></i> 3줄 핵심 요약</h3>
+            <ul id="panel-summary-list">
+              <li>요약 1번 내용이 이곳에 표시됩니다.</li>
+              <li>요약 2번 내용이 이곳에 표시됩니다.</li>
+              <li>요약 3번 내용이 이곳에 표시됩니다.</li>
+            </ul>
+          </div>
+
+          <!-- Connections List -->
+          <div class="connections-card">
+            <h3><i data-lucide="git-pull-request"></i> 연관 지식 및 관계 (<span id="panel-conn-count">0</span>)</h3>
+            <div id="panel-connections-list" class="connections-tags-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Source File / Metadata -->
+          <div class="source-card">
+            <h3><i data-lucide="file-text"></i> 원본 자산 정보</h3>
+            <div class="file-path-box">
+              <code id="panel-path">c:\Users\pado7\.antigravity\...</code>
+            </div>
+            <div class="action-buttons">
+              <button class="btn-secondary" id="btn-copy-path"><i data-lucide="copy"></i> 경로 복사</button>
+              <button class="btn-primary" id="btn-focus-node"><i data-lucide="locate-fixed"></i> 노드 위치로 이동</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </main>
+
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>
