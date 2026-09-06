@@ -10,7 +10,7 @@ def log(msg):
 
 def get_models():
     try:
-        req = urllib.request.Request("http://localhost:1234/v1/models", method="GET")
+        req = urllib.request.Request("http://127.0.0.1:1234/v1/models", method="GET")
         with urllib.request.urlopen(req, timeout=5) as response:
             data = json.loads(response.read().decode('utf-8'))
             return [m["id"] for m in data.get("data", [])]
@@ -18,14 +18,38 @@ def get_models():
         log(f"Error fetching models: {e}")
         return []
 
+def resolve_best_model(requested_model, loaded_models):
+    if not loaded_models:
+        return requested_model or "local-model"
+    if not requested_model:
+        return loaded_models[0]
+    if requested_model in loaded_models:
+        return requested_model
+        
+    req_clean = requested_model.lower().replace(":", "-").replace("_", "-")
+    
+    # Check primary model families with priority
+    for keyword in ["deepseek", "coder", "qwen", "gemma", "llama"]:
+        if keyword in req_clean:
+            matches = [m for m in loaded_models if keyword in m.lower()]
+            if matches:
+                return matches[0]
+                
+    # Match any other keyword segment
+    parts = [p for p in req_clean.split("-") if len(p) > 2 and not p.isdigit()]
+    for m in loaded_models:
+        m_lower = m.lower()
+        if any(part in m_lower for part in parts):
+            return m
+            
+    # Fallback to the first available loaded model
+    return loaded_models[0]
+
 def call_model(prompt, model=None, system_prompt=None, temperature=0.7, max_tokens=2048):
     try:
         loaded_models = get_models()
-        if not loaded_models:
-            # Try using model name or fallback
-            model_name = model or "local-model"
-        else:
-            model_name = model if (model and model in loaded_models) else loaded_models[0]
+        model_name = resolve_best_model(model, loaded_models)
+        log(f"Routing request for model '{model}' -> resolved to '{model_name}'")
         
         messages = []
         if system_prompt:
@@ -41,7 +65,7 @@ def call_model(prompt, model=None, system_prompt=None, temperature=0.7, max_toke
         
         req_data = json.dumps(payload).encode('utf-8')
         req = urllib.request.Request(
-            "http://localhost:1234/v1/chat/completions",
+            "http://127.0.0.1:1234/v1/chat/completions",
             data=req_data,
             headers={"Content-Type": "application/json"},
             method="POST"
@@ -55,7 +79,7 @@ def call_model(prompt, model=None, system_prompt=None, temperature=0.7, max_toke
             return "No response content from model."
     except Exception as e:
         log(f"Error calling model: {e}")
-        return f"Error calling local model via LM Studio: {e}. Please ensure LM Studio is running at http://localhost:1234 and a model is loaded."
+        return f"Error calling local model via LM Studio: {e}. Please ensure LM Studio is running at http://127.0.0.1:1234 and a model is loaded."
 
 def handle_request(req):
     method = req.get("method")
